@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">LightMusic</string>
+    <string name="StateOfPower">OFF</string>
+    <string name="InfoAboutMode">Выбранный режим работы</string>
+    <string name="ChooseButtonMode">Переключить режим</string>
+    <string name="ModeWorking">Нет активного режима работы</string>
+    <string name="InfoStatusAboutPower">Power OFF</string>
+    <string name="power_off">Power OFF</string>
+    <string name="power">Power OFF</string>
+</resources>
