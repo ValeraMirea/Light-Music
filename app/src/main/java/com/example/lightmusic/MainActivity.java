@@ -12,8 +12,11 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Looper;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.AsyncTaskLoader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -30,6 +33,10 @@ import android.widget.EditText;
 import android.widget.Toast;
 import android.bluetooth.BluetoothSocket;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -55,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
     // Bluetooth
 
     private BluetoothAdapter myBluetoothAdapter;
+    BluetoothSocket clientSocket;
 
     public MainActivity() {
     }
@@ -64,10 +72,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
+        //Создание потоков для работы Bluetooth
         ChooseMode = 1;
         counter = 1;
-
         //Создание и инициализация компонентов и блоков программы
 
         final Button power_btn = findViewById(R.id.Power);
@@ -85,75 +92,155 @@ public class MainActivity extends AppCompatActivity {
         power_btn = (Button) findViewById(R.id.Power);
         change_btn = (Button) findViewById(R.id.ChooseButton);
         */
-
+        Bluetooth();
         // Отключаем кнопку переключения режима по умолчанию
         change_btn.setEnabled(false);
-        if (Check_Bluetooth()){
+        if (myBluetoothAdapter.isEnabled()){
             bl_Image.setImageResource(R.drawable.ic_action_on);
-            power_btn.setEnabled(true);
         }
-        else {
+        else{
+            Bluetooth();
             bl_Image.setImageResource(R.drawable.ic_action_off);
-            power_btn.setEnabled(false);
         }
-
         // Обработка нажатия кнопки питания для адресной ленты
         power_btn.setOnClickListener(view -> {
 
-            // Включаем кнопку переключения режима
-            if (counter == 1) {
-                power_btn.setText("Power ON");
-                change_btn.setEnabled(true);
-                //bl_Image.setImageResource(R.drawable.ic_action_on);
-                counter += 1;
-            } else {
-                power_btn.setText("Power OFF");
-                change_btn.setEnabled(false);
-                //bl_Image.setImageResource(R.drawable.ic_action_off);
-                counter -= 1;
+            if (myBluetoothAdapter.isEnabled()){
+                // Включаем кнопку переключения режима
+                if (counter == 1) {
+                    power_btn.setText("Power ON");
+                    change_btn.setEnabled(true);
+                    //bl_Image.setImageResource(R.drawable.ic_action_on);
+                    counter += 1;
+                } else {
+                    power_btn.setText("Power OFF");
+                    change_btn.setEnabled(false);
+                    counter -= 1;
+                }
             }
-
+            else{
+                Bluetooth();
+            }
         });
-
+        //Поиск и подключение к модулю БТ, убийственная штука, но тормозит все
+        ConnectToBluetooth();
         //обработчик событий кнопки переключения режимов
-
         change_btn.setOnClickListener(view -> {
+            try {
+                //Получаем выходной поток для передачи данных
+                OutputStream outStream = clientSocket.getOutputStream();
+
+                //Значение переменнгой, которую будет отправлять по БТ
+                int value = 0;
+
+                //В зависимости от того, какая кнопка была нажата,
+                //изменяем данные для посылки
+
             switch (ChooseMode++) {
                 case 1:
-                    modeField.setText("Выбран режим столбик громкости от зеленого к красному");
+                    value = (change_btn.isPressed() ? 1 : 0) + 60;
+                    modeField.setText("Выбран режим столбик громкости от зеленого к красному" + " " + value);
                     break;
                 case 2:
-                    modeField.setText("Выбран режим столбик громкости бегущая радуга");
+                    value = (change_btn.isPressed() ? 1 : 0) + 70;
+                    modeField.setText("Выбран режим столбик громкости бегущая радуга" + " " + value);
                     break;
                 case 3:
-                    modeField.setText("Выбран режим светомузыки по частотам (5 полос симетрично)");
+                    value = (change_btn.isPressed() ? 1 : 0) + 80;
+                    modeField.setText("Выбран режим светомузыки по частотам (5 полос симетрично)" + " " + value);
                     break;
                 case 4:
-                    modeField.setText("Выбран режим светомузыки по частотам (3 полосы) ");
-                    ChooseMode = 0;
+                    value = (change_btn.isPressed() ? 1 : 0) + 90;
+                    modeField.setText("Выбран режим светомузыки по частотам (3 полосы)" + " " + value);
+                    ChooseMode = 1;
                     break;
+            }
+
+                //Пишем данные в выходной поток
+                outStream.write(value);
+            } catch (IOException e) {
+                //Если есть ошибки, выводим их в лог
+                Log.d("BLUETOOTH", e.getMessage());
             }
         });
     }
-    private boolean Check_Bluetooth() {
-        boolean bluetooth_flag;
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+    private void Check_Bluetooth() {
         if (myBluetoothAdapter == null) {
                     // Устройство не поддерживает Bluetooth
                     Toast.makeText(getApplicationContext(), "Это устройство не поддерживает Bluetooth",
                             Toast.LENGTH_LONG).show();
-                    bluetooth_flag = false;
+//                    bluetooth_flag = false;
                 } else if (!myBluetoothAdapter.isEnabled()) {
                     Toast.makeText(getApplicationContext(), "Модуль Bluetooth отключен",
                             Toast.LENGTH_LONG).show();
-                    bluetooth_flag = false;
-                } else {
-                    Toast.makeText(getApplicationContext(), "Модуль Bluetooth включен",
-                            Toast.LENGTH_LONG).show();
-                    bluetooth_flag = true;
+//                    bluetooth_flag = false;
+//                } else {
+//                    Toast.makeText(getApplicationContext(), "Модуль Bluetooth включен",
+//                            Toast.LENGTH_LONG).show();
+//                    bluetooth_flag = true;
                 }
-        return bluetooth_flag;
     }
+    public void Bluetooth(){
 
+        //Включаем Bluetooth. Если он уже активен, то игнорируется этот шаг
+        String enableBT = BluetoothAdapter.ACTION_REQUEST_ENABLE;
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        else{
+            Check_Bluetooth();
+        }
+        startActivityForResult(new Intent(enableBT), 1);
+        Toast.makeText(getApplicationContext(), "Модуль Bluetooth включен",
+                Toast.LENGTH_LONG).show();
+    }
+    //Перенести в другую Активность, иначе RIP :)
+    public void ConnectToBluetooth(){
+        try{
+            //Устройство с данным адресом - наш Bluetooth Bee
+            //Адрес опредеяется следующим образом: установите соединение
+            //между ПК и модулем (пин: 1234), а затем посмотрите в настройках
+            //соединения адрес модуля. Скорее всего он будет аналогичным.
+            BluetoothDevice device = myBluetoothAdapter.getRemoteDevice("00:13:02:01:00:09");
+
+            //Инициируем соединение с устройством
+            Method m = device.getClass().getMethod(
+                    "createRfcommSocket", new Class[] {int.class});
+
+            clientSocket = (BluetoothSocket) m.invoke(device, 1);
+            clientSocket.connect();
+
+            //В случае появления любых ошибок, выводим в лог сообщение
+        } catch (IOException e) {
+            Log.d("BLUETOOTH", e.getMessage());
+        } catch (SecurityException e) {
+            Log.d("BLUETOOTH", e.getMessage());
+        } catch (NoSuchMethodException e) {
+            Log.d("BLUETOOTH", e.getMessage());
+        } catch (IllegalArgumentException e) {
+            Log.d("BLUETOOTH", e.getMessage());
+        } catch (IllegalAccessException e) {
+            Log.d("BLUETOOTH", e.getMessage());
+        } catch (InvocationTargetException e) {
+            Log.d("BLUETOOTH", e.getMessage());
+        }
+
+        //Выводим сообщение об успешном подключении
+        Toast.makeText(getApplicationContext(), "CONNECTED", Toast.LENGTH_LONG).show();
+    }
 
 //    public void Bluetooth(){
 //        if (!myBluetoothAdapter.isEnabled()) {
