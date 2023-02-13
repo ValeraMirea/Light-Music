@@ -7,4 +7,6 @@
     <string name="InfoStatusAboutPower">Power OFF</string>
     <string name="power_off">Power OFF</string>
     <string name="power">Power OFF</string>
+    <string name="Scan">Запуск сканирования</string>
+    <string name="BT">TODO</string>
 </resources>
