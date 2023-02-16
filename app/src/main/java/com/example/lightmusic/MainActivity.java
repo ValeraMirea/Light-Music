@@ -19,6 +19,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -60,20 +61,38 @@ public class MainActivity extends AppCompatActivity {
         imageView.setBackgroundColor(getResources().getColor(R.color.black));
         final TextView textViewModeWorking = findViewById(R.id.ModeWorking);
 
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        //Включаем Bluetooth. Если он уже активен, то игнорируется этот шаг
+        if (!bluetoothAdapter.isEnabled()) {
+            imageView.setImageResource(R.drawable.ic_action_off);
+            Toast.makeText(getApplicationContext(), "Модуль Bluetooth отключен",
+                    Toast.LENGTH_LONG).show();
+        }
+        else if(bluetoothAdapter == null){
+            // Устройство не поддерживает Bluetooth
+            imageView.setImageResource(R.drawable.ic_action_err);
+            Toast.makeText(getApplicationContext(), "Это устройство не поддерживает Bluetooth",
+                    Toast.LENGTH_LONG).show();
+        }
+        else if (bluetoothAdapter.isEnabled()){
+            imageView.setImageResource(R.drawable.ic_action_on);
+            Toast.makeText(getApplicationContext(), "Модуль Bluetooth включен",
+                    Toast.LENGTH_LONG).show();
+        }
+
         // Ссылаемся на выбор устройства
         deviceName = getIntent().getStringExtra("deviceName");
         if (deviceName != null) {
             // Получение MAC адреса устройства BT
             deviceAddress = getIntent().getStringExtra("deviceAddress");
             // Получение прогреса о соединении
-            toolbar.setSubtitle("Connecting to " + deviceName + "...");
+            toolbar.setSubtitle("Подключение к: " + deviceName + "...");
             progressBar.setVisibility(View.VISIBLE);
             buttonConnect.setEnabled(false);
 
             /*
             Когда будет найдено "имя устройства" строки ниже вызовает новый поток для создания соединения Bluetooth с выбранным устройством
              */
-            BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
             createConnectThread = new CreateConnectThread(bluetoothAdapter, deviceAddress, getApplicationContext());
             createConnectThread.start();
         }
@@ -88,15 +107,17 @@ public class MainActivity extends AppCompatActivity {
                     case CONNECTING_STATUS:
                         switch (msg.arg1) {
                             case 1:
-                                toolbar.setSubtitle("Connected to " + deviceName);
+                                toolbar.setSubtitle("Подключено к: " + deviceName);
                                 progressBar.setVisibility(View.GONE);
                                 buttonConnect.setEnabled(true);
                                 buttonToggle.setEnabled(true);
+                                imageView.setImageResource(R.drawable.ic_action_con);
                                 break;
                             case -1:
-                                toolbar.setSubtitle("Device fails to connect");
+                                toolbar.setSubtitle("Сбой подключения");
                                 progressBar.setVisibility(View.GONE);
                                 buttonConnect.setEnabled(true);
+                                imageView.setImageResource(R.drawable.ic_action_err);
                                 break;
                         }
                         break;
@@ -119,20 +140,18 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 String cmdText = null;
-                String btnState = buttonToggle.getText().toString().toLowerCase();
+                String btnState = buttonToggle.getText().toString().toLowerCase(); //получение текста с кнопки маленькими буквами
                 switch (btnState) {
-                    case "turn on":
-                        buttonToggle.setText("Turn Off");
-                        imageView.setBackgroundColor(getResources().getColor(R.color.white));
-                        // Command to turn on LED on Arduino. Must match with the command in Arduino code
-                        textViewModeWorking.setText("1");
+                    case "включить": //можно добавлять комаед сколько угодно, помнить про задержку при передаче сигнала по Bluetooth
+                        buttonToggle.setText("Выключить");
+                        // Команда для включения светодиода
+                        textViewModeWorking.setText("Лента активна");
                         cmdText = "<turn on>";
                         break;
-                    case "turn off":
-                        buttonToggle.setText("Turn On");
-                        imageView.setBackgroundColor(getResources().getColor(R.color.black));
-                        textViewModeWorking.setText("0");
-                        // Command to turn off LED on Arduino. Must match with the command in Arduino code
+                    case "выключить":
+                        buttonToggle.setText("Включить");
+                        textViewModeWorking.setText("Лента отключена");
+                        // Команда для выключения светодиода
                         cmdText = "<turn off>";
                         break;
                 }
@@ -325,9 +344,4 @@ public class MainActivity extends AppCompatActivity {
         a.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(a);
     }
-//    @Override
-//    public void onPause() {
-//        super.onPause();
-//        moveTaskToBack(true);
-//    }
 }

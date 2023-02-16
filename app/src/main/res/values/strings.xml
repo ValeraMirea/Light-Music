@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">LightMusic</string>
+    <string name="app_name">Light Music</string>
     <string name="StateOfPower">OFF</string>
     <string name="InfoAboutMode">Выбранный режим работы</string>
     <string name="ChooseButtonMode">Переключить режим</string>
@@ -14,5 +14,6 @@
     <string name="Change_mode">Переключить режим работы</string>
     <string name="Connect">Подключиться</string>
     <string name="ModeWorkingState">Не выбран никакой режим работы</string>
-    <string name="turn_on">Turn On</string>
+    <string name="turn_on">Включить</string>
+    <string name="Connect_Device_List">Список сопряженных устройств:</string>
 </resources>
