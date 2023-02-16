@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">LightMusic</string>
+    <string name="app_name">Light Music</string>
     <string name="StateOfPower">OFF</string>
     <string name="InfoAboutMode">Выбранный режим работы</string>
     <string name="ChooseButtonMode">Переключить режим</string>
@@ -7,4 +7,13 @@
     <string name="InfoStatusAboutPower">Power OFF</string>
     <string name="power_off">Power OFF</string>
     <string name="power">Power OFF</string>
+    <string name="Scan">Запуск сканирования</string>
+    <string name="BT">TODO</string>
+    <string name="visual_bluetooth">Visual BLuetooth</string>
+    <string name="Connect_to_devise">Подключиться к устройству</string>
+    <string name="Change_mode">Переключить режим работы</string>
+    <string name="Connect">Подключиться</string>
+    <string name="ModeWorkingState">Не выбран никакой режим работы</string>
+    <string name="turn_on">Включить</string>
+    <string name="Connect_Device_List">Список сопряженных устройств:</string>
 </resources>
