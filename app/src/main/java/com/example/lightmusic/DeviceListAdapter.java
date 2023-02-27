@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
@@ -34,6 +35,7 @@ public class DeviceListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
     }
 
+    @NonNull
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.device_info_layout, parent, false);
         ViewHolder vh = new ViewHolder(v);
@@ -47,18 +49,15 @@ public class DeviceListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         itemHolder.textName.setText(deviceInfoModel.getDeviceName());
         itemHolder.textAddress.setText(deviceInfoModel.getDeviceHardwareAddress());
 
-        // When a device is selected
-        itemHolder.linearLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(context, MainActivity.class);
-                // Send device details to the MainActivity
-                intent.putExtra("deviceName", deviceInfoModel.getDeviceName());
-                intent.putExtra("deviceAddress", deviceInfoModel.getDeviceHardwareAddress());
-                // Call MainActivity
-                context.startActivity(intent);
+        // Когда устройство выбрано, получение имени и адреса устройства
+        itemHolder.linearLayout.setOnClickListener(view -> {
+            Intent intent = new Intent(context, MainActivity.class);
+            // Отправка данных в главную активность
+            intent.putExtra("deviceName", deviceInfoModel.getDeviceName());
+            intent.putExtra("deviceAddress", deviceInfoModel.getDeviceHardwareAddress());
+            // Вызов главной активности
+            context.startActivity(intent);
 
-            }
         });
     }
 

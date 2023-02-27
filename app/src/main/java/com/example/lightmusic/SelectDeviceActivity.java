@@ -46,7 +46,7 @@ public class SelectDeviceActivity extends AppCompatActivity {
         Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
         List<Object> deviceList = new ArrayList<>();
         if (pairedDevices.size() > 0) {
-            // There are paired devices. Get the name and address of each paired device.
+            // Здесь будут отображаться все сопряженные устройства. Получаем имя и MAC адресс каждого.
             for (BluetoothDevice device : pairedDevices) {
                 String deviceName = device.getName();
                 String deviceHardwareAddress = device.getAddress(); // MAC адрес
@@ -101,22 +101,17 @@ public class SelectDeviceActivity extends AppCompatActivity {
                         // Устройство не поддерживает Bluetooth
                         Toast.makeText(getApplicationContext(), "Это устройство не поддерживает Bluetooth",
                                 Toast.LENGTH_LONG).show();
-//                        Intent myIntent = new Intent(SelectDeviceActivity.this, MainActivity.class);
-//                        SelectDeviceActivity.this.startActivity(myIntent);
                     }
                 }
             });
             snackbar.show();
             final Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    finish();
-                    overridePendingTransition(R.anim.slidein, R.anim.slideout);
-                    onBackPressed();
-                    startActivity(getIntent());
-                    overridePendingTransition(R.anim.slidein, R.anim.slideout);
-                }
+            handler.postDelayed(() -> {
+                finish();
+                overridePendingTransition(R.anim.slidein, R.anim.slideout);
+                onBackPressed();
+                startActivity(getIntent());
+                overridePendingTransition(R.anim.slidein, R.anim.slideout);
             }, 5000);
         }
     }

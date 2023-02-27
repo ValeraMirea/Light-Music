@@ -2,12 +2,14 @@ package com.example.lightmusic;
 
 import static android.content.ContentValues.TAG;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -15,7 +17,6 @@ import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -25,24 +26,25 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 
+import com.google.android.material.snackbar.Snackbar;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity{
 
     private String deviceName = null;
-    private String deviceAddress;
-    private EditText modeField;
     public static Handler handler;
     public static BluetoothSocket mmSocket;
     public static ConnectedThread connectedThread;
+    @SuppressLint("StaticFieldLeak")
     public static CreateConnectThread createConnectThread;
 
     private final static int CONNECTING_STATUS = 1; // используется в обработчике Bluetooth для определения статуса сообщения
-    private final static int MESSAGE_READ = 2; // используется в обработчике Bluetooth для идентификации обновления сообщения
+   // private final static int MESSAGE_READ = 2; // используется в обработчике Bluetooth для идентификации обновления сообщения
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,26 +56,30 @@ public class MainActivity extends AppCompatActivity {
         final Toolbar toolbar = findViewById(R.id.toolbar);
         final ProgressBar progressBar = findViewById(R.id.progressBar);
         progressBar.setVisibility(View.GONE);
-        final TextView textViewInfo = findViewById(R.id.textViewInfo);
+        //final TextView textViewInfo = findViewById(R.id.textViewInfo);
         final Button buttonToggle = findViewById(R.id.buttonToggle);
         buttonToggle.setEnabled(false);
         final ImageView imageView = findViewById(R.id.imageView);
         imageView.setBackgroundColor(getResources().getColor(R.color.black));
         final TextView textViewModeWorking = findViewById(R.id.ModeWorking);
+        final Button AudioStream = findViewById(R.id.Measure_the_output_signal_level);
+        AudioStream.setEnabled(false);
 
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
         //Включаем Bluetooth. Если он уже активен, то игнорируется этот шаг
+
         if (!bluetoothAdapter.isEnabled()) {
             imageView.setImageResource(R.drawable.ic_action_off);
             Toast.makeText(getApplicationContext(), "Модуль Bluetooth отключен",
                     Toast.LENGTH_LONG).show();
         }
-        else if(bluetoothAdapter == null){
-            // Устройство не поддерживает Bluetooth
-            imageView.setImageResource(R.drawable.ic_action_err);
-            Toast.makeText(getApplicationContext(), "Это устройство не поддерживает Bluetooth",
-                    Toast.LENGTH_LONG).show();
-        }
+//        else if(bluetoothAdapter == null){
+//            // Устройство не поддерживает Bluetooth
+//            imageView.setImageResource(R.drawable.ic_action_err);
+//            Toast.makeText(getApplicationContext(), "Это устройство не поддерживает Bluetooth",
+//                    Toast.LENGTH_LONG).show();
+//        }
         else if (bluetoothAdapter.isEnabled()){
             imageView.setImageResource(R.drawable.ic_action_on);
             Toast.makeText(getApplicationContext(), "Модуль Bluetooth включен",
@@ -84,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
         deviceName = getIntent().getStringExtra("deviceName");
         if (deviceName != null) {
             // Получение MAC адреса устройства BT
-            deviceAddress = getIntent().getStringExtra("deviceAddress");
+            String deviceAddress = getIntent().getStringExtra("deviceAddress");
             // Получение прогреса о соединении
             toolbar.setSubtitle("Подключение к: " + deviceName + "...");
             progressBar.setVisibility(View.VISIBLE);
@@ -103,67 +109,95 @@ public class MainActivity extends AppCompatActivity {
         handler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(Message msg) {
-                switch (msg.what) {
-                    case CONNECTING_STATUS:
-                        switch (msg.arg1) {
-                            case 1:
-                                toolbar.setSubtitle("Подключено к: " + deviceName);
-                                progressBar.setVisibility(View.GONE);
-                                buttonConnect.setEnabled(true);
-                                buttonToggle.setEnabled(true);
-                                imageView.setImageResource(R.drawable.ic_action_con);
-                                break;
-                            case -1:
-                                toolbar.setSubtitle("Сбой подключения");
-                                progressBar.setVisibility(View.GONE);
-                                buttonConnect.setEnabled(true);
-                                imageView.setImageResource(R.drawable.ic_action_err);
-                                break;
-                        }
-                        break;
+                if (msg.what == CONNECTING_STATUS) {
+                    switch (msg.arg1) {
+                        case 1:
+                            toolbar.setSubtitle("Подключено к: " + deviceName);
+                            progressBar.setVisibility(View.GONE);
+                            buttonConnect.setEnabled(true);
+                            buttonToggle.setEnabled(true);
+                            AudioStream.setEnabled(true);
+                            imageView.setImageResource(R.drawable.ic_action_con);
+                            break;
+                        case -1:
+                            toolbar.setSubtitle("Сбой подключения");
+                            progressBar.setVisibility(View.GONE);
+                            buttonConnect.setEnabled(true);
+                            imageView.setImageResource(R.drawable.ic_action_err);
+                            break;
+                    }
                 }
             }
         };
 
         // Выбор устройства
-        buttonConnect.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // Помешаем Адаптер в список
-                Intent intent = new Intent(MainActivity.this, SelectDeviceActivity.class);
-                startActivity(intent);
-            }
+        buttonConnect.setOnClickListener(view -> {
+            // Помешаем Адаптер в список
+            Intent intent = new Intent(MainActivity.this, SelectDeviceActivity.class);
+            startActivity(intent);
+        });
+
+        //Проверка аудио громкости выходного потока
+        AudioStream.setOnClickListener(view -> {
+            buttonToggle.setEnabled(false);
+            textViewModeWorking.setTextColor(Color.RED);
+            textViewModeWorking.setText("ВНИМАНИЕ! ЗАМЕР ВЫХОДНОГО АУДИО ПОТОКА ПРОИЗВОДИТСЯ ПРИ ПОДКЛЮЧЁННОМ РАЗЪЁМЕ И ПОСТАНОВКЕ МУЗЫКИ НА ПАУЗУ, ИНАЧЕ ДАННЫЕ МОГУТ БЫТЬ НЕКОРРЕКТНО ИЗМЕРЕНЫ!");
+            Snackbar snackbar = Snackbar.make(view, "Прочти инструкцию выше, это важно :)", Snackbar.LENGTH_INDEFINITE);
+            snackbar.setAction("Прочитал", view1 -> {
+                String cmdText;
+                cmdText = "<Audio>";
+                connectedThread.write(cmdText);
+                textViewModeWorking.setText("Выполняется определение уровня громкости. Дождитесь когда лента включится повторно, обычно это происходит в течение 4-5 секунд");
+                new Handler().postDelayed(() -> {
+                    // Отобразить SnackBar
+                    Snackbar Volme = Snackbar.make(findViewById(android.R.id.content), "Определение громкости прошло успешно",Snackbar.LENGTH_INDEFINITE);
+                    Volme.setAction("Спасибо", view11 -> {
+                        textViewModeWorking.setTextColor(Color.WHITE);
+                        textViewModeWorking.setText("Светомузыка готова к использованию! Зажигаем!");
+                        buttonToggle.setEnabled(true);
+                    });
+                    Volme.show();
+                }, 4000);
+            });
+            snackbar.show();
         });
 
         // Управление Лентой
-        buttonToggle.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String cmdText = null;
-                String btnState = buttonToggle.getText().toString().toLowerCase(); //получение текста с кнопки маленькими буквами
-                switch (btnState) {
-                    case "включить": //можно добавлять комаед сколько угодно, помнить про задержку при передаче сигнала по Bluetooth
-                        buttonToggle.setText("Выключить");
-                        // Команда для включения светодиода
-                        textViewModeWorking.setText("Лента активна");
-                        cmdText = "<turn on>";
-                        break;
-                    case "выключить":
-                        buttonToggle.setText("Включить");
-                        textViewModeWorking.setText("Лента отключена");
-                        // Команда для выключения светодиода
-                        cmdText = "<turn off>";
-                        break;
-                }
-                // Отправка команды Ардуине
-                connectedThread.write(cmdText);
+        buttonToggle.setOnClickListener(view -> {
+            String cmdText = null;
+            String btnState = buttonToggle.getText().toString().toLowerCase(); //получение текста с кнопки маленькими буквами
+            switch (btnState) {
+                //можно добавлять команд сколько угодно, главное помнить про задержку при передаче сигнала по Bluetooth и скорость работы проца ардуины
+                case "режим №1":
+                    buttonToggle.setText("Режим №2");
+                    textViewModeWorking.setText("Выбран режим работы плавная бегущая радуга (Режим №2)");
+                    cmdText = "<mode 1>";
+                    break;
+                case "режим №2":
+                    buttonToggle.setText("Режим №3");
+                    textViewModeWorking.setText("Выбран режим работы бегущие частоты (Режим №3)");
+                    cmdText = "<mode 7>";
+                    break;
+                case "режим №3":
+                    buttonToggle.setText("Режим №4");
+                    textViewModeWorking.setText("Выбран режим работы анализатор спектра (Режим №4)");
+                    cmdText = "<mode 8>";
+                    break;
+                case "режим №4":
+                    buttonToggle.setText("Режим №1");
+                    textViewModeWorking.setText("Выбран режим работы от зеленого к красному (Режим №1)");
+                    cmdText = "<mode 0>";
+                    break;
             }
+            // Отправка команды Ардуине
+            connectedThread.write(cmdText);
         });
+
     }
 
     /* ============================ Поток для создания Bluetooth соединения =================================== */
     public static class CreateConnectThread extends Thread {
-        private Context context;
+        private final Context context;
 
         public CreateConnectThread(BluetoothAdapter bluetoothAdapter, String address, Context context) {
             /*
@@ -244,8 +278,8 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
 
-                // Попытка подключения удалась. Выполнять работу, связанную с
-                // соединение в отдельном потоке.
+                // Попытка подключения удалась. Выполнить работу, связанную с
+                // соединением в отдельном потоке.
             connectedThread = new ConnectedThread(mmSocket);
             connectedThread.start();
         }
@@ -262,12 +296,9 @@ public class MainActivity extends AppCompatActivity {
 
     /* =============================== Поток обработки данных =========================================== */
     public static class ConnectedThread extends Thread {
-        private final BluetoothSocket mmSocket;
-        private final InputStream mmInStream;
         private final OutputStream mmOutStream;
 
         public ConnectedThread(BluetoothSocket socket) {
-            mmSocket = socket;
             InputStream tmpIn = null;
             OutputStream tmpOut = null;
 
@@ -277,39 +308,40 @@ public class MainActivity extends AppCompatActivity {
             try {
                 tmpIn = socket.getInputStream();
                 tmpOut = socket.getOutputStream();
-            } catch (IOException e) { }
+            } catch (IOException ignored) { }
 
-            mmInStream = tmpIn;
+            InputStream mmInStream = tmpIn;
             mmOutStream = tmpOut;
         }
+        /* =============================== Использовалось про отладке работы с ардуино, в основной программе это не нужно, работает без этого =========================================== */
 
-        public void run() {
-            byte[] buffer = new byte[1024];  // Буфер потока
-            int bytes = 0; // Вернутые байты для прочтения
-            // Продолжайте прослушивать входной поток до тех пор, пока не возникнет исключение
-            while (true) {
-                try {
-                    /*
-                    Считывайте из входного потока из Arduino до тех пор, пока не будет достигнут символ завершения.
-                    Затем отправьте целое строковое сообщение обработчику.
-                     */
-                    bytes = mmInStream.read(buffer);
-                    buffer[bytes] = (byte) mmInStream.read();
-                    String readMessage;
-                    if (buffer[bytes] == '\n'){
-                        readMessage = new String(buffer,0,bytes);
-                        Log.e("Arduino Message",readMessage);
-                        handler.obtainMessage(MESSAGE_READ,readMessage).sendToTarget();
-                        bytes = 0;
-                    } else {
-                        bytes++;
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    break;
-                }
-            }
-        }
+//        public void run() {
+//            byte[] buffer = new byte[1024];  // Буфер потока
+//            int bytes; // Вернутые байты для прочтения
+//            // Продолжайте прослушивать входной поток до тех пор, пока не возникнет исключение
+//            while (true) {
+//                try {
+//                    /*
+//                    Считывайте из входного потока из Arduino до тех пор, пока не будет достигнут символ завершения.
+//                    Затем отправьте целое строковое сообщение обработчику.
+//                     */
+//                    bytes = mmInStream.read(buffer);
+//                    buffer[bytes] = (byte) mmInStream.read();
+//                    String readMessage;
+//                    if (buffer[bytes] == '\n'){
+//                        readMessage = new String(buffer,0,bytes);
+//                        Log.e("Сообщение от Arduino",readMessage);
+//                        handler.obtainMessage(MESSAGE_READ,readMessage).sendToTarget();
+//                        bytes = 0;
+//                    } else {
+//                        bytes += 1;
+//                    }
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                    break;
+//                }
+//            }
+//        }
 
         /* Отправка данных для работы с подключенным устройством*/
         public void write(String input) {
@@ -318,7 +350,7 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     mmOutStream.write(bytes);
                 } catch (IOException e) {
-                    Log.e("Send Error","Unable to send message",e);
+                    Log.e("Ошибка отправки","Невозможно отправить сообщение",e);
                 }
             }
 
@@ -328,20 +360,21 @@ public class MainActivity extends AppCompatActivity {
         public void cancel() {
             try {
                 mmSocket.close();
-            } catch (IOException e) { }
+            } catch (IOException ignored) { }
         }
     }
 
-    /* ============================ Прерывание соединения ====================== */
-    @Override
-    public void onBackPressed() {
-        // Terminate Bluetooth Connection and close app
-        if (createConnectThread != null){
-            createConnectThread.cancel();
-        }
-        Intent a = new Intent(Intent.ACTION_MAIN);
-        a.addCategory(Intent.CATEGORY_HOME);
-        a.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(a);
-    }
+    /* =============================== Использовалось про отладке работы с ардуино, в основной программе это не нужно, работает без этого =========================================== */
+//    /* ============================ Прерывание соединения ====================== */
+//    @Override
+//    public void onBackPressed() {
+//        // Прервать соединение и закрыть приложение
+//        if (createConnectThread != null){
+//            createConnectThread.cancel();
+//        }
+//        Intent a = new Intent(Intent.ACTION_MAIN);
+//        a.addCategory(Intent.CATEGORY_HOME);
+//        a.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//        startActivity(a);
+//    }
 }
