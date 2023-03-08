@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 
 public class SelectDeviceActivity extends AppCompatActivity {
+    final Handler handler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,14 +106,18 @@ public class SelectDeviceActivity extends AppCompatActivity {
                 }
             });
             snackbar.show();
-            final Handler handler = new Handler();
             handler.postDelayed(() -> {
                 finish();
-                overridePendingTransition(R.anim.slidein, R.anim.slideout);
+                overridePendingTransition(R.anim.slidein, R.anim.slideout); //Анимация обновления (вертикальная)
                 onBackPressed();
                 startActivity(getIntent());
                 overridePendingTransition(R.anim.slidein, R.anim.slideout);
             }, 5000);
         }
+    }
+    @Override
+    public void onBackPressed() {
+        handler.removeCallbacksAndMessages(null); // остановить таймер
+        super.onBackPressed();
     }
 }

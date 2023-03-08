@@ -19,6 +19,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,6 +38,7 @@ import java.util.UUID;
 public class MainActivity extends AppCompatActivity{
 
     private String deviceName = null;
+    private int btnpotent = 0;
     public static Handler handler;
     public static BluetoothSocket mmSocket;
     public static ConnectedThread connectedThread;
@@ -53,10 +55,10 @@ public class MainActivity extends AppCompatActivity{
 
         // UI переменные
         final Button buttonConnect = findViewById(R.id.buttonConnect);
+        final Button potent_bt = findViewById(R.id.buttonpotent);
         final Toolbar toolbar = findViewById(R.id.toolbar);
         final ProgressBar progressBar = findViewById(R.id.progressBar);
         progressBar.setVisibility(View.GONE);
-        //final TextView textViewInfo = findViewById(R.id.textViewInfo);
         final Button buttonToggle = findViewById(R.id.buttonToggle);
         buttonToggle.setEnabled(false);
         final ImageView imageView = findViewById(R.id.imageView);
@@ -64,11 +66,12 @@ public class MainActivity extends AppCompatActivity{
         final TextView textViewModeWorking = findViewById(R.id.ModeWorking);
         final Button AudioStream = findViewById(R.id.Measure_the_output_signal_level);
         AudioStream.setEnabled(false);
+        potent_bt.setEnabled(false);
+        AudioStream.setVisibility(View.GONE);
 
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         //Включаем Bluetooth. Если он уже активен, то игнорируется этот шаг
-
         if (!bluetoothAdapter.isEnabled()) {
             imageView.setImageResource(R.drawable.ic_action_off);
             Toast.makeText(getApplicationContext(), "Модуль Bluetooth отключен",
@@ -116,7 +119,7 @@ public class MainActivity extends AppCompatActivity{
                             progressBar.setVisibility(View.GONE);
                             buttonConnect.setEnabled(true);
                             buttonToggle.setEnabled(true);
-                            AudioStream.setEnabled(true);
+                            potent_bt.setEnabled(true);
                             imageView.setImageResource(R.drawable.ic_action_con);
                             break;
                         case -1:
@@ -136,6 +139,22 @@ public class MainActivity extends AppCompatActivity{
             Intent intent = new Intent(MainActivity.this, SelectDeviceActivity.class);
             startActivity(intent);
         });
+        potent_bt.setOnClickListener(view ->{
+                    switch (btnpotent += 1) {
+                        case 1:
+                            potent_bt.setText("Потенциометр используется");
+                            AudioStream.setVisibility(View.VISIBLE);
+                            AudioStream.setEnabled(true);
+                            break;
+                        case 2:
+                            potent_bt.setText("Потенциометр не используется");
+                            AudioStream.setEnabled(false);
+                            AudioStream.setVisibility(View.GONE);
+                            btnpotent = 0;
+                            break;
+
+                    }
+        });
 
         //Проверка аудио громкости выходного потока
         AudioStream.setOnClickListener(view -> {
@@ -152,7 +171,7 @@ public class MainActivity extends AppCompatActivity{
                     // Отобразить SnackBar
                     Snackbar Volme = Snackbar.make(findViewById(android.R.id.content), "Определение громкости прошло успешно",Snackbar.LENGTH_INDEFINITE);
                     Volme.setAction("Спасибо", view11 -> {
-                        textViewModeWorking.setTextColor(Color.WHITE);
+                        textViewModeWorking.setTextColor(Color.GREEN);
                         textViewModeWorking.setText("Светомузыка готова к использованию! Зажигаем!");
                         buttonToggle.setEnabled(true);
                     });
@@ -162,38 +181,51 @@ public class MainActivity extends AppCompatActivity{
             snackbar.show();
         });
 
+
         // Управление Лентой
         buttonToggle.setOnClickListener(view -> {
             String cmdText = null;
             String btnState = buttonToggle.getText().toString().toLowerCase(); //получение текста с кнопки маленькими буквами
+            textViewModeWorking.setTextColor(Color.WHITE);
             switch (btnState) {
                 //можно добавлять команд сколько угодно, главное помнить про задержку при передаче сигнала по Bluetooth и скорость работы проца ардуины
                 case "режим №1":
                     buttonToggle.setText("Режим №2");
-                    textViewModeWorking.setText("Выбран режим работы плавная бегущая радуга (Режим №2)");
+                    textViewModeWorking.setText("Режим №2 - Плавная бегущая радуга");
                     cmdText = "<mode 1>";
+                    buttonToggle.setEnabled(false);
                     break;
                 case "режим №2":
                     buttonToggle.setText("Режим №3");
-                    textViewModeWorking.setText("Выбран режим работы бегущие частоты (Режим №3)");
+                    textViewModeWorking.setText("Режим №3 - Бегущие частоты 2.0");
                     cmdText = "<mode 7>";
+                    buttonToggle.setEnabled(false);
                     break;
                 case "режим №3":
                     buttonToggle.setText("Режим №4");
-                    textViewModeWorking.setText("Выбран режим работы анализатор спектра (Режим №4)");
+                    textViewModeWorking.setText("Режим №4 - Анализатор спектра");
                     cmdText = "<mode 8>";
+                    buttonToggle.setEnabled(false);
                     break;
                 case "режим №4":
                     buttonToggle.setText("Режим №1");
-                    textViewModeWorking.setText("Выбран режим работы от зеленого к красному (Режим №1)");
+                    textViewModeWorking.setText("Режим №1 - Бегущие частоты");
                     cmdText = "<mode 0>";
+                    buttonToggle.setEnabled(false);
                     break;
             }
-            // Отправка команды Ардуине
+            // Отправка команды Ардуине и задержка включения кнопки, чтобы Ардуино успела обработать команды
             connectedThread.write(cmdText);
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    buttonToggle.setEnabled(true);
+                }
+            },3000);
         });
 
     }
+
 
     /* ============================ Поток для создания Bluetooth соединения =================================== */
     public static class CreateConnectThread extends Thread {
@@ -224,8 +256,9 @@ public class MainActivity extends AppCompatActivity{
             try {
                 /*
                 Получите BluetoothSocket для подключения к данному устройству BluetoothDevice.
-                Due to Android device varieties,the method below may not work fo different devices.
-                You should try using other methods i.e. :
+                В зависимости от различных моделей девайсов и версий андроид, методы могут различаться,
+                можно попробовать что-то из этого, если стандартные методы не работают:
+
                 tmp = device.createRfcommSocketToServiceRecord(MY_UUID);
                  */
                 if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
@@ -241,7 +274,7 @@ public class MainActivity extends AppCompatActivity{
                 tmp = bluetoothDevice.createInsecureRfcommSocketToServiceRecord(uuid);
 
             } catch (IOException e) {
-                Log.e(TAG, "Socket's create() method failed", e);
+                Log.e(TAG, "Сокет создан, метод выдал ошибку", e);
             }
             mmSocket = tmp;
         }

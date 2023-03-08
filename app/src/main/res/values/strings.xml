@@ -13,8 +13,9 @@
     <string name="Connect_to_devise">Подключиться к устройству</string>
     <string name="Change_mode">Переключить режим работы</string>
     <string name="Connect">Подключиться</string>
-    <string name="ModeWorkingState">Выбран режим работы от зеленого к красному (Режим №1)</string>
+    <string name="ModeWorkingState">Режим №1 - Бегущие частоты</string>
     <string name="turn_on">Режим №1</string>
     <string name="Connect_Device_List">Список сопряженных устройств:</string>
     <string name="AudioStream">Измерить уровень выходящего аудио потока</string>
+    <string name="Checkpotent">потенциометр не используется</string>
 </resources>
