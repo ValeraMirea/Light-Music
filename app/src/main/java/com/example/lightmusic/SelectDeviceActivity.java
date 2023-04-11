@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 public class SelectDeviceActivity extends AppCompatActivity {
+    final Handler handler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +61,8 @@ public class SelectDeviceActivity extends AppCompatActivity {
             DeviceListAdapter deviceListAdapter = new DeviceListAdapter(this, deviceList);
             recyclerView.setAdapter(deviceListAdapter);
             recyclerView.setItemAnimator(new DefaultItemAnimator());
+
+
         } else {
             View view = findViewById(R.id.textViewDeviceName);
             Snackbar snackbar = Snackbar.make(view, "Активируйте Bluetooth или добавьте устройство в список сопряженных", Snackbar.LENGTH_INDEFINITE);
@@ -105,14 +109,18 @@ public class SelectDeviceActivity extends AppCompatActivity {
                 }
             });
             snackbar.show();
-            final Handler handler = new Handler();
             handler.postDelayed(() -> {
                 finish();
-                overridePendingTransition(R.anim.slidein, R.anim.slideout);
+                overridePendingTransition(R.anim.slidein, R.anim.slideout); //Анимация обновления (вертикальная)
                 onBackPressed();
                 startActivity(getIntent());
                 overridePendingTransition(R.anim.slidein, R.anim.slideout);
             }, 5000);
         }
+    }
+    @Override
+    public void onBackPressed() {
+        handler.removeCallbacksAndMessages(null); // остановить таймер
+        super.onBackPressed();
     }
 }
