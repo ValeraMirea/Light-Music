@@ -23,6 +23,7 @@
         android:theme="@style/Theme.LightMusic"
         tools:targetApi="33">
         <activity android:name=".SelectDeviceActivity" />
+        <activity android:name=".MainScreen" />
         <activity android:name=".MainActivity"
             android:exported="true"
             android:screenOrientation="portrait">

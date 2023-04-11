@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -60,6 +61,8 @@ public class SelectDeviceActivity extends AppCompatActivity {
             DeviceListAdapter deviceListAdapter = new DeviceListAdapter(this, deviceList);
             recyclerView.setAdapter(deviceListAdapter);
             recyclerView.setItemAnimator(new DefaultItemAnimator());
+
+
         } else {
             View view = findViewById(R.id.textViewDeviceName);
             Snackbar snackbar = Snackbar.make(view, "Активируйте Bluetooth или добавьте устройство в список сопряженных", Snackbar.LENGTH_INDEFINITE);

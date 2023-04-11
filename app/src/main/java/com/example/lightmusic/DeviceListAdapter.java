@@ -34,6 +34,8 @@ public class DeviceListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
     }
 
+    //Храним данные о девайсах Bluetooth с помощью ViewHolder
+
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.device_info_layout, parent, false);
         ViewHolder vh = new ViewHolder(v);
@@ -47,21 +49,18 @@ public class DeviceListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         itemHolder.textName.setText(deviceInfoModel.getDeviceName());
         itemHolder.textAddress.setText(deviceInfoModel.getDeviceHardwareAddress());
 
-        // When a device is selected
-        itemHolder.linearLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(context, MainActivity.class);
-                // Send device details to the MainActivity
-                intent.putExtra("deviceName", deviceInfoModel.getDeviceName());
-                intent.putExtra("deviceAddress", deviceInfoModel.getDeviceHardwareAddress());
-                // Call MainActivity
-                context.startActivity(intent);
+        // Когда девайс выбран, отправляем его на главный экран приложения
 
-            }
+        itemHolder.linearLayout.setOnClickListener(view -> {
+            Intent intent = new Intent(context, MainActivity.class);
+            intent.putExtra("deviceName", deviceInfoModel.getDeviceName());
+            intent.putExtra("deviceAddress", deviceInfoModel.getDeviceHardwareAddress());
+            context.startActivity(intent);
+
         });
     }
 
+    //Получить размер списка устройств
     @Override
     public int getItemCount() {
         int dataCount = deviceList.size();
