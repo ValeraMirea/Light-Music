@@ -52,7 +52,7 @@ public class DeviceListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         // Когда девайс выбран, отправляем его на главный экран приложения
 
         itemHolder.linearLayout.setOnClickListener(view -> {
-            Intent intent = new Intent(context, MainActivity.class);
+            Intent intent = new Intent(context, MainScreen.class);
             intent.putExtra("deviceName", deviceInfoModel.getDeviceName());
             intent.putExtra("deviceAddress", deviceInfoModel.getDeviceHardwareAddress());
             context.startActivity(intent);
