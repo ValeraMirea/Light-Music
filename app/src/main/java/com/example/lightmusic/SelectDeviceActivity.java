@@ -4,18 +4,18 @@ import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.snackbar.Snackbar;
 
@@ -23,18 +23,52 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class SelectDeviceActivity extends AppCompatActivity {
+public class SelectDeviceActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener {
     final Handler handler = new Handler();
+    private SwipeRefreshLayout SwipeRefreshLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select_device);
 
+        SwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
+        SwipeRefreshLayout.setOnRefreshListener(this);
+        handler.postDelayed(this::update, 1000);
+    }
+    @Override
+    public void onBackPressed() {
+        handler.removeCallbacksAndMessages(null); // остановить таймер обновления
+        Intent intent = new Intent(this, MainScreen.class);
+        startActivity(intent);
+        finish();
+        super.onBackPressed();
+    }
+
+    // Обновление списка сопряженных блютуз устройств
+    @Override
+    public void onRefresh() {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                SwipeRefreshLayout.setRefreshing(false);
+                updateBT();
+            }
+        }, 2000);
+    }
+
+    @Override
+    public void onPointerCaptureChanged(boolean hasCapture) {
+        super.onPointerCaptureChanged(hasCapture);
+    }
+    private void update(){
+
         // Bluetooth настройки
+
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         // Получение списка сопряженных устройств
+
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
@@ -48,14 +82,18 @@ public class SelectDeviceActivity extends AppCompatActivity {
         Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
         List<Object> deviceList = new ArrayList<>();
         if (pairedDevices.size() > 0) {
+
             // Здесь будут отображаться все сопряженные устройства. Получаем имя и MAC адресс каждого.
+
             for (BluetoothDevice device : pairedDevices) {
                 String deviceName = device.getName();
                 String deviceHardwareAddress = device.getAddress(); // MAC адрес
                 DeviceInfoModel deviceInfoModel = new DeviceInfoModel(deviceName, deviceHardwareAddress);
                 deviceList.add(deviceInfoModel);
             }
+
             // Отображение сопряженного устройства с помощью RecyclerView
+
             RecyclerView recyclerView = findViewById(R.id.textViewDeviceName);
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
             DeviceListAdapter deviceListAdapter = new DeviceListAdapter(this, deviceList);
@@ -69,8 +107,9 @@ public class SelectDeviceActivity extends AppCompatActivity {
             snackbar.setAction("OK", new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
                     //Включаем Bluetooth. Если он уже активен, то игнорируется этот шаг
+
                     if (ActivityCompat.checkSelfPermission(SelectDeviceActivity.this, android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                         // TODO: Consider calling
                         //    ActivityCompat#requestPermissions
@@ -101,7 +140,7 @@ public class SelectDeviceActivity extends AppCompatActivity {
                         }
                         startActivityForResult(new Intent(enableBT), 1);
                     }
-                    else if(bluetoothAdapter == null){
+                    else {
                         // Устройство не поддерживает Bluetooth
                         Toast.makeText(getApplicationContext(), "Это устройство не поддерживает Bluetooth",
                                 Toast.LENGTH_LONG).show();
@@ -109,18 +148,18 @@ public class SelectDeviceActivity extends AppCompatActivity {
                 }
             });
             snackbar.show();
+        }
+    }
+    private void updateBT(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             handler.postDelayed(() -> {
                 finish();
-                overridePendingTransition(R.anim.slidein, R.anim.slideout); //Анимация обновления (вертикальная)
+                overridePendingTransition(R.anim.slidein, R.anim.slideout);
                 onBackPressed();
                 startActivity(getIntent());
                 overridePendingTransition(R.anim.slidein, R.anim.slideout);
-            }, 5000);
+            }, 500);
+            recreate();
         }
-    }
-    @Override
-    public void onBackPressed() {
-        handler.removeCallbacksAndMessages(null); // остановить таймер
-        super.onBackPressed();
     }
 }

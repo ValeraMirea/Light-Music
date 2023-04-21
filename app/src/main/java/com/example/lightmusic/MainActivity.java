@@ -5,7 +5,9 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -19,6 +21,8 @@ public class MainActivity extends AppCompatActivity {
     private EditText username;
     private EditText password;
     private SharedPreferences preferences;
+
+    final Handler handler = new Handler();
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -52,9 +56,16 @@ public class MainActivity extends AppCompatActivity {
             if (enteredUsername.equals("user") && enteredPassword.equals("pass")) {
                 preferences.edit().putString("username", enteredUsername).apply();
                 preferences.edit().putString("password", enteredPassword).apply();
-                Intent intent = new Intent(this, MainScreen.class);
-                startActivity(intent);
-                finish();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                    handler.postDelayed(() -> {
+                        overridePendingTransition(R.anim.loginin, R.anim.loginout);
+                        Intent intent = new Intent(this, MainScreen.class);
+                        startActivity(intent);
+                        overridePendingTransition(R.anim.loginin, R.anim.loginout);
+                        finish();
+                    }, 500);
+                }
+
             } else {
 
                 //Если данные неверные, показываем пользователю ошибку

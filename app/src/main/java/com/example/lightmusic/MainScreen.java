@@ -71,6 +71,7 @@ public class MainScreen extends AppCompatActivity {
         //Включаем Bluetooth. Если он уже активен, то игнорируется этот шаг
         if (!bluetoothAdapter.isEnabled()) {
             imageView.setImageResource(R.drawable.ic_action_off);
+            imageView.setColorFilter(Color.RED);
             Toast.makeText(getApplicationContext(), "Модуль Bluetooth отключен",
                     Toast.LENGTH_LONG).show();
         }
@@ -82,6 +83,7 @@ public class MainScreen extends AppCompatActivity {
 //        }
         else if (bluetoothAdapter.isEnabled()){
             imageView.setImageResource(R.drawable.ic_action_on);
+            imageView.setColorFilter(Color.GREEN);
             Toast.makeText(getApplicationContext(), "Модуль Bluetooth включен",
                     Toast.LENGTH_LONG).show();
         }
@@ -129,6 +131,7 @@ public class MainScreen extends AppCompatActivity {
                             progressBar.setVisibility(View.GONE);
                             buttonConnect.setEnabled(true);
                             imageView.setImageResource(R.drawable.ic_action_err);
+                            imageView.setColorFilter(Color.RED);
                             break;
                     }
                 }
@@ -203,25 +206,25 @@ public class MainScreen extends AppCompatActivity {
                 case "режим №1":
                     buttonToggle.setText("Режим №2");
                     textViewModeWorking.setText("Режим №2 - Плавная бегущая радуга");
-                    cmdText = "<mode 1>";
+                    cmdText = "1";
                     buttonToggle.setEnabled(false);
                     break;
                 case "режим №2":
                     buttonToggle.setText("Режим №3");
                     textViewModeWorking.setText("Режим №3 - Бегущие частоты 2.0");
-                    cmdText = "<mode 7>";
+                    cmdText = "7";
                     buttonToggle.setEnabled(false);
                     break;
                 case "режим №3":
                     buttonToggle.setText("Режим №4");
                     textViewModeWorking.setText("Режим №4 - Анализатор спектра");
-                    cmdText = "<mode 8>";
+                    cmdText = "8";
                     buttonToggle.setEnabled(false);
                     break;
                 case "режим №4":
                     buttonToggle.setText("Режим №1");
                     textViewModeWorking.setText("Режим №1 - Бегущие частоты");
-                    cmdText = "<mode 0>";
+                    cmdText = "0";
                     buttonToggle.setEnabled(false);
                     break;
             }
