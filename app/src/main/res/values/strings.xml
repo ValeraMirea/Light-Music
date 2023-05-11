@@ -20,7 +20,7 @@
     <string name="Checkpotent">потенциометр не используется</string>
     <string name="name_login_and_user">Введите свои данные</string>
     <string name="user_name">Пользователь:</string>
-    <string name="bt_allow">Войти</string>
+    <string name="bt_allow">Авторизоваться</string>
     <string name="user">Пользователь:</string>
     <string name="password">введите пароль</string>
     <string name="user_password">Пароль:</string>
