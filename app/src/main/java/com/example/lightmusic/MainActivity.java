@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
                 preferences.edit().putString("password", enteredPassword).apply();
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
                     handler.postDelayed(() -> {
+                        Toast.makeText(this, "Успешная авторизация!", Toast.LENGTH_SHORT).show();
                         overridePendingTransition(R.anim.loginin, R.anim.loginout);
                         Intent intent = new Intent(this, MainScreen.class);
                         startActivity(intent);
