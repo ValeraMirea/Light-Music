@@ -3,6 +3,7 @@ package com.example.lightmusic;
 import static android.content.ContentValues.TAG;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -10,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -25,6 +27,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.material.snackbar.Snackbar;
 
@@ -35,6 +38,8 @@ import java.util.UUID;
 
 public class MainScreen extends AppCompatActivity {
     private String deviceName = null;
+
+    private BluetoothAdapter bluetoothAdapter;
     private int btnpotent = 0;
     public static Handler handler;
     public static BluetoothSocket mmSocket;
@@ -44,6 +49,8 @@ public class MainScreen extends AppCompatActivity {
 
     private final static int CONNECTING_STATUS = 1; // используется в обработчике Bluetooth для определения статуса сообщения
     // private final static int MESSAGE_READ = 2; // используется в обработчике Bluetooth для идентификации обновления сообщения
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,8 +72,12 @@ public class MainScreen extends AppCompatActivity {
         AudioStream.setEnabled(false);
         potent_bt.setEnabled(false);
         AudioStream.setVisibility(View.GONE);
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
-        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+
+
+
 
         //Включаем Bluetooth. Если он уже активен, то игнорируется этот шаг
         if (!bluetoothAdapter.isEnabled()) {
@@ -81,7 +92,7 @@ public class MainScreen extends AppCompatActivity {
 //            Toast.makeText(getApplicationContext(), "Это устройство не поддерживает Bluetooth",
 //                    Toast.LENGTH_LONG).show();
 //        }
-        else if (bluetoothAdapter.isEnabled()){
+        else if (bluetoothAdapter.isEnabled()) {
             imageView.setImageResource(R.drawable.ic_action_on);
             imageView.setColorFilter(Color.GREEN);
             Toast.makeText(getApplicationContext(), "Модуль Bluetooth включен",
@@ -147,7 +158,7 @@ public class MainScreen extends AppCompatActivity {
             Intent intent = new Intent(MainScreen.this, SelectDeviceActivity.class);
             startActivity(intent);
         });
-        potent_bt.setOnClickListener(view ->{
+        potent_bt.setOnClickListener(view -> {
             switch (btnpotent += 1) {
                 case 1:
                     potent_bt.setText("Потенциометр используется");
@@ -180,7 +191,7 @@ public class MainScreen extends AppCompatActivity {
 
                     // Отобразить SnackBar
 
-                    Snackbar Volme = Snackbar.make(findViewById(android.R.id.content), "Определение громкости прошло успешно",Snackbar.LENGTH_INDEFINITE);
+                    Snackbar Volme = Snackbar.make(findViewById(android.R.id.content), "Определение громкости прошло успешно", Snackbar.LENGTH_INDEFINITE);
                     Volme.setAction("Спасибо", view11 -> {
                         textViewModeWorking.setTextColor(Color.GREEN);
                         textViewModeWorking.setText("Светомузыка готова к использованию! Зажигаем!");
@@ -231,10 +242,19 @@ public class MainScreen extends AppCompatActivity {
             // Отправка команды Ардуине и задержка включения кнопки, чтобы Ардуино успела обработать команды
 
             connectedThread.write(cmdText);
-            new Handler().postDelayed(() -> buttonToggle.setEnabled(true),3000);
+            new Handler().postDelayed(() -> buttonToggle.setEnabled(true), 3000);
         });
 
     }
+
+
+
+
+
+
+
+
+
 
 
     /* ============================ Поток для создания Bluetooth соединения =================================== */

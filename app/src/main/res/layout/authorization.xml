@@ -37,7 +37,7 @@
 
     <EditText
         android:id="@+id/edit_user"
-        android:layout_width="233dp"
+        android:layout_width="wrap_content"
         android:layout_height="50dp"
         android:autofillHints="username"
         android:hint="@string/user_login"
@@ -48,11 +48,11 @@
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.6"
+        app:layout_constraintHorizontal_bias="0.519"
         app:layout_constraintLeft_toRightOf="@+id/user_text"
         app:layout_constraintStart_toEndOf="@+id/user_text"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.135">
+        app:layout_constraintVertical_bias="0.136">
 
         <requestFocus />
     </EditText>
@@ -68,14 +68,14 @@
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/edit_password"
-        app:layout_constraintHorizontal_bias="0.463"
+        app:layout_constraintHorizontal_bias="0.239"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/user_text"
-        app:layout_constraintVertical_bias="0.045" />
+        app:layout_constraintVertical_bias="0.048" />
 
     <EditText
         android:id="@+id/edit_password"
-        android:layout_width="233dp"
+        android:layout_width="wrap_content"
         android:layout_height="50dp"
         android:layout_marginTop="44dp"
         android:autofillHints="password"
@@ -86,7 +86,7 @@
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.91"
+        app:layout_constraintHorizontal_bias="0.821"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/edit_user"
         app:layout_constraintVertical_bias="0.0" />

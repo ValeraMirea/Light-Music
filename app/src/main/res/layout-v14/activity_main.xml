@@ -67,7 +67,8 @@
         app:layout_constraintHorizontal_bias="0.483"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.6" />
+        app:layout_constraintVertical_bias="0.6"
+        android:textAllCaps="false"/>
 
     <ProgressBar
         android:id="@+id/progressBar"
@@ -92,7 +93,8 @@
         app:layout_constraintHorizontal_bias="0.542"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/buttonToggle"
-        app:layout_constraintVertical_bias="0.096" />
+        app:layout_constraintVertical_bias="0.096"
+        android:textAllCaps="false"/>
 
     <Button
         android:id="@+id/buttonpotent"
@@ -104,7 +106,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView"
-        app:layout_constraintVertical_bias="0.412" />
+        app:layout_constraintVertical_bias="0.412"
+        android:textAllCaps="false"/>
 
     <TextView
         android:id="@+id/ModeWorking"
